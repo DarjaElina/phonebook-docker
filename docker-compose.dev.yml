@@ -1,0 +1,42 @@
+services:
+  server:
+    image: phonebook-backend-dev
+    build:
+      context: ./phonebook-backend
+      dockerfile: dev.Dockerfile
+    volumes:
+      - ./phonebook-backend:/usr/src/app
+    container_name: phonebook-backend-dev
+    environment:
+      - MONGODB_URI=mongodb://the_user:the_password@mongodb:27017/my_db
+  mongodb:
+    image: mongo:latest
+    container_name: mongodb
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: example
+      MONGO_INITDB_DATABASE: my_db
+    ports:
+      - 27018:27017
+    volumes:
+      - ./phonebook-backend/mongo/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
+      - ./phonebook-backend/mongo_data:/data/db
+  app:
+    image: phonebook-frontend-dev
+    build:
+      context: ./phonebook-frontend
+      dockerfile: dev.Dockerfile
+    volumes:
+      - ./phonebook-frontend:/usr/src/app
+    container_name: phonebook-frontend-dev
+  nginx:
+    image: nginx:1.20.1
+    volumes:
+      - ./nginx.dev.conf:/etc/nginx/nginx.conf:ro
+    ports:
+      - 8080:80
+    container_name: reverse-proxy
+    depends_on:
+      - app
+      - server

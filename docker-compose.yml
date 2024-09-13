@@ -1,0 +1,27 @@
+services:
+  server:
+    image: phonebook-backend
+    build:
+      context: ./phonebook-backend
+      dockerfile: Dockerfile
+    volumes:
+      - ./phonebook-backend:/usr/src/app
+    container_name: phonebook-backend
+  app:
+    image: phonebook-frontend
+    build:
+      context: ./phonebook-frontend
+      dockerfile: Dockerfile
+    volumes:
+      - ./phonebook-frontend:/usr/src/app
+    container_name: phonebook-frontend
+  nginx:
+    image: nginx:1.20.1
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    ports:
+      - 8080:80
+    container_name: reverse-proxy
+    depends_on:
+      - app
+      - server
